@@ -13,8 +13,8 @@ def get_html(url):
 
 # запись в json
 def write_json(data):
-    with open("data_file.json", "w") as file:
-        json.dump(data, file, indent=2)
+    with open("data_file.json", "w", encoding='utf-8') as file:
+        json.dump(data, file, indent=2, ensure_ascii=False)
 
 
 # сам парсинг и создание словаря с результатом
