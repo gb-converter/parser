@@ -5,20 +5,42 @@ import json
 import os
 
 
-# запрос на сервер и получение ответа в html
-def get_html(url):
+def get_html(url):                                                          # запрос на сервер и получение ответа в html
     req = requests.get(url)
     return req.text
 
 
-# запись в json
-def write_json(data):
-    with open("data_file.json", "w", encoding='UTF-8') as file:
-        json.dump(data, file, indent=2, ensure_ascii=False)
+def write_json(data):                                                             # создание пути сохранения и файл json
+    file_name = 'data_file.json'
+    home_dir = os.getcwd()
+    try:
+        answer = input(f'(yes) сохранить в *{home_dir}*, или (no) изменить путь сохранения: ')
+        if answer == 'no':
+            path_dir_name = input(f'Укажите путь сохранения файла {file_name}: ')
+
+            if not os.path.exists(path_dir_name):                                  # Если пути не существует создаем его
+                os.makedirs(path_dir_name)
+
+            full_file_name = os.path.join(path_dir_name, file_name)
+
+            with open(full_file_name, "w", encoding='UTF-8') as file:                      # создание json в новом месте
+                json.dump(data, file, indent=2, ensure_ascii=False)
+            print(f'Сохранен в *{full_file_name}*')
+
+        elif answer == 'yes':
+            with open(file_name, "w", encoding='UTF-8') as file:                        # создание json в корневой папке
+                json.dump(data, file, indent=2, ensure_ascii=False)
+            print(f'Сохранен в *{home_dir}*')
+        else:
+            print('Пожалуйста введите (yes) или (no).')
+            write_json(data)
+
+    except FileNotFoundError:
+        print(f'Системе не удается найти указанный путь: {path_dir_name}\nУкажите верный путь.')
+        write_json(data)
 
 
-# сам парсинг и создание словаря с результатом
-def get_data(html):
+def get_data(html):                                                       # сам парсинг и создание словаря с результатом
 
     data = BeautifulSoup(html, 'lxml')
 
@@ -49,12 +71,9 @@ def get_data(html):
     write_json(dict_)
 
 
-#  адрес сервера, вызов функиций, место где создается json
-def main():
+def main():                                                                              # адрес сервера, вызов функиций
     url = 'https://www.cbr.ru/currency_base/daily/'
     get_data(get_html(url))
-    way = os.getcwd()
-    print(f'data_file.json сохранен в {way}')
 
 
 if __name__ == '__main__':
