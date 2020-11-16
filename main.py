@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import os
+import argparse
 
 
 def get_html(url):                                                          # запрос на сервер и получение ответа в html
@@ -12,32 +13,25 @@ def get_html(url):                                                          # з
 
 def write_json(data):                                                             # создание пути сохранения и файл json
     file_name = 'data_file.json'
-    home_dir = os.getcwd()
     try:
-        answer = input(f'(yes) сохранить в *{home_dir}*, или (no) изменить путь сохранения: ')
-        if answer == 'no':
-            path_dir_name = input(f'Укажите путь сохранения файла {file_name}: ')
-
-            if not os.path.exists(path_dir_name):                                  # Если пути не существует создаем его
-                os.makedirs(path_dir_name)
-
-            full_file_name = os.path.join(path_dir_name, file_name)
-
-            with open(full_file_name, "w", encoding='UTF-8') as file:                      # создание json в новом месте
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-p', '--path', type=str, help='Укажите путь')
+        args = parser.parse_args()
+        path_ = args.path
+        if path_ is None:
+            with open(file_name, "w", encoding='UTF-8') as file:                       # создание json в папке исходника
                 json.dump(data, file, indent=2, ensure_ascii=False)
-            print(f'Сохранен в *{full_file_name}*')
 
-        elif answer == 'yes':
-            with open(file_name, "w", encoding='UTF-8') as file:                        # создание json в корневой папке
-                json.dump(data, file, indent=2, ensure_ascii=False)
-            print(f'Сохранен в *{home_dir}*')
         else:
-            print('Пожалуйста введите (yes) или (no).')
-            write_json(data)
+            if not os.path.exists(path_):                                          # Если пути не существует создаем его
+                os.makedirs(path_)
+                full_file_name = os.path.join(path_, file_name)
+
+                with open(full_file_name, "w", encoding='UTF-8') as file:                  # создание json в новом месте
+                    json.dump(data, file, indent=2, ensure_ascii=False)
 
     except FileNotFoundError:
-        print(f'Системе не удается найти указанный путь: {path_dir_name}\nУкажите верный путь.')
-        write_json(data)
+        print('try -h, --help')
 
 
 def get_data(html):                                                       # сам парсинг и создание словаря с результатом
@@ -57,7 +51,7 @@ def get_data(html):                                                       # са
             unit = td_data[2].text
             currency = td_data[3].text
             rate = td_data[4].text
-
+            """Создаем словарь с данными с сайты"""
             data = {
                 char_code: {
                     'Цифр. код': num_code,
