@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import os
-
+import argparse
 
 # запрос на сервер и получение ответа в html
 def get_html(url):
@@ -12,10 +12,13 @@ def get_html(url):
 
 
 # запись в json
-def write_json(data):
-    with open("data_file.json", "w", encoding='UTF-8') as file:
-        json.dump(data, file, indent=2, ensure_ascii=False)
-
+def write_json(data, way):
+    try:
+        with open(os.path.join(way, "data_file.json"), "w", encoding='UTF-8') as file:
+            json.dump(data, file, indent=2, ensure_ascii=False)
+        print(f'data_file.json сохранен в {way}')
+    except:
+        print(f'не удалось сохранить файл в {way}')
 
 # сам парсинг и создание словаря с результатом
 def get_data(html):
@@ -45,16 +48,33 @@ def get_data(html):
                     }
                 }
             dict_.update(data)
+    return dict_
 
-    write_json(dict_)
 
-
-#  адрес сервера, вызов функиций, место где создается json
+#  адрес сервера, путь для сохранения данных, вызов функций, место где создается json
 def main():
     url = 'https://www.cbr.ru/currency_base/daily/'
-    get_data(get_html(url))
-    way = os.getcwd()
-    print(f'data_file.json сохранен в {way}')
+    
+    # добавляем возможность указывать путь, по которому будем сохранять файл с данными
+    arg_ability = argparse.ArgumentParser()
+    arg_ability.add_argument('--path', type=str, help='the path to save the file with data')  # это необязательный аргумент
+    way = arg_ability.parse_args().path
+    
+    way_is_default = way is None  # True, если приложение запущено без параметра --path
+    
+    # если в параметрах запуска приложения был указан путь для сохранения файла с данными,
+    # проверяем: существует ли указанный путь?, если нет - пытаемся создать недостающие директории
+    if not way_is_default:
+        if not os.path.isdir(way):
+            try:
+                os.makedirs(way)
+            except:
+                way_is_default = True
+            
+    if way_is_default:
+        way = os.getcwd()  # по-умолчанию, директория сохранения файла - текущая
+        
+    write_json(get_data(get_html(url)), way)
 
 
 if __name__ == '__main__':
