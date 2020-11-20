@@ -4,10 +4,17 @@ from bs4 import BeautifulSoup
 import json
 import os
 import argparse
+import logging
+import logs.config_log
+
+
+# Инициализация клиентского логера
+PARSER_LOGGER = logging.getLogger('parser')
 
 # запрос на сервер и получение ответа в html
 def get_html(url):
     req = requests.get(url)
+    PARSER_LOGGER.info(f'Ответ от сайта {url} получен')
     return req.text
 
 
@@ -17,8 +24,10 @@ def write_json(data, way):
         with open(os.path.join(way, "data_file.json"), "w", encoding='UTF-8') as file:
             json.dump(data, file, indent=2, ensure_ascii=False)
         print(f'data_file.json сохранен в {way}')
+        PARSER_LOGGER.info(f'data_file.json сохранен в {way}')
     except:
         print(f'не удалось сохранить файл в {way}')
+        PARSER_LOGGER.critical(f'не удалось сохранить файл в {way}')
 
 # сам парсинг и создание словаря с результатом
 def get_data(html):
@@ -48,12 +57,14 @@ def get_data(html):
                     }
                 }
             dict_.update(data)
+    PARSER_LOGGER.info(f'Словарь с результами сохранен')
     return dict_
 
 
 #  адрес сервера, путь для сохранения данных, вызов функций, место где создается json
 def main():
     url = 'https://www.cbr.ru/currency_base/daily/'
+    PARSER_LOGGER.info(f'Запущен парсинг сайта {url}')
     
     # добавляем возможность указывать путь, по которому будем сохранять файл с данными
     arg_ability = argparse.ArgumentParser()
@@ -75,6 +86,8 @@ def main():
         way = os.getcwd()  # по-умолчанию, директория сохранения файла - текущая
         
     write_json(get_data(get_html(url)), way)
+
+    PARSER_LOGGER.info(f'Завершен парсинг сайта')
 
 
 if __name__ == '__main__':
