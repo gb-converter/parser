@@ -1,4 +1,4 @@
-"""Unit-тесты клиента"""
+"""Unit-тесты"""
 
 import sys
 import os
@@ -10,7 +10,6 @@ class TestClass(unittest.TestCase):
     '''
     Класс с тестами
     '''
-
     def test_200_ans(self):
         """Тест корректтного разбора ответа 200 от сервера"""
         self.assertNotEqual(get_html(URL), None)
