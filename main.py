@@ -51,6 +51,7 @@ def get_data(html):
             data = {
                 char_code: {
                     'Цифр. код': num_code,
+                    'Букв. код': char_code,
                     'Единица': unit,
                     'Валюта': currency,
                     'Курс': rate
@@ -59,6 +60,67 @@ def get_data(html):
             dict_.update(data)
     PARSER_LOGGER.info(f'Словарь с результами сохранен')
     return dict_
+
+
+
+# вычленяет буквенный код из словаря
+parsed_cbr = get_data(get_html('https://www.cbr.ru/currency_base/daily/'))
+#   parsed_cbr   =   {'Date': '21.11.2020', 'AUD': {'Цифр. код': '036', 'Букв. код': 'AUD', 'Единица': '1', 'Валюта': 'Австралийский доллар', 'Курс': '55,4127'},
+for value in parsed_cbr.values():
+    if type(value) is dict:
+        letter_code = value['Букв. код']
+        print(letter_code)
+
+
+# парсит wiki | ищет icon
+html_wiki = 'https://en.wikipedia.org/wiki/List_of_circulating_currencies'
+data_wiki = BeautifulSoup(get_html(html_wiki), 'lxml')
+# print(data_wiki)
+date_icon = data_wiki.find('table').find('tbody').find_all('tr')
+
+switch = 0
+dict_with_icon = {}
+for td in date_icon[1:]:
+    if switch == 0:
+        icon = td.find_all('td')[2].text
+        ico_code = td.find_all('td')[3].text
+    elif switch == 1 or switch == 2:
+        icon = td.find_all('td')[1].text
+        ico_code = td.find_all('td')[2].text
+        switch -= 1
+
+    if td .find('td', rowspan='2') != None:
+        switch = 1
+    elif td .find('td', rowspan='3') != None:
+        switch = 2
+    # print(switch)
+    # print(icon, ico_code)
+
+    if icon != 'none':
+        new_data = {
+            ico_code: {
+                'icon': icon,
+                'ico_code': ico_code,
+                        }
+                    }
+    dict_with_icon.update(new_data)
+
+
+print(dict_with_icon)
+
+
+
+
+
+
+# dict_ = {'Date': date}
+
+
+
+
+
+
+
 
 
 #  адрес сервера, путь для сохранения данных, вызов функций, место где создается json
