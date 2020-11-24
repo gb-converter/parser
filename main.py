@@ -69,17 +69,18 @@ parsed_cbr = get_data(get_html('https://www.cbr.ru/currency_base/daily/'))
 for value in parsed_cbr.values():
     if type(value) is dict:
         letter_code = value['Букв. код']
-        print(letter_code)
+        # print(letter_code)
 
 
 # парсит wiki | ищет icon
 html_wiki = 'https://en.wikipedia.org/wiki/List_of_circulating_currencies'
 data_wiki = BeautifulSoup(get_html(html_wiki), 'lxml')
-# print(data_wiki)
-date_icon = data_wiki.find('table').find('tbody').find_all('tr')
+date_icon = data_wiki.find('table').find('tbody').find_all('tr')    # date_icon - все tr
 
-switch = 0
 dict_with_icon = {}
+switch = 0    # для строк, где первый столбец сконкатенирован с предыдущей строкой. switch = 11or2 если rowspan='2'or'3'
+
+# цикл вычленяет иконки и коды
 for td in date_icon[1:]:
     if switch == 0:
         icon = td.find_all('td')[2].text
@@ -89,35 +90,24 @@ for td in date_icon[1:]:
         ico_code = td.find_all('td')[2].text
         switch -= 1
 
+    # если строка с конкатенацией то в след. строке иконка будет на -1 позиции
     if td .find('td', rowspan='2') != None:
         switch = 1
     elif td .find('td', rowspan='3') != None:
         switch = 2
-    # print(switch)
-    # print(icon, ico_code)
 
+    # заполняем новый словарь, состоящ. из иконок из буквенных кодов
     if icon != 'none':
         new_data = {
             ico_code: {
-                'icon': icon,
-                'ico_code': ico_code,
+                'Знак': icon,
+                'Букв. код': ico_code,
                         }
                     }
     dict_with_icon.update(new_data)
 
 
 print(dict_with_icon)
-
-
-
-
-
-
-# dict_ = {'Date': date}
-
-
-
-
 
 
 
