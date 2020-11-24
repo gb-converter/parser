@@ -86,9 +86,9 @@ def main():
     if way_is_default:
         way = os.getcwd()  # по-умолчанию, директория сохранения файла - текущая
         
-    write_json(get_data(get_html(url)), way)
+    # write_json(get_data(get_html(url)), way)
 
-    PARSER_LOGGER.info(f'Завершен парсинг сайта')
+    # PARSER_LOGGER.info(f'Завершен парсинг сайта')
 
 
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -150,6 +150,9 @@ def main():
 
     print(merge(parsed_cbr, dict_with_icon))
 
+    write_json(merge(dict_with_icon, parsed_cbr), way)
+
+    PARSER_LOGGER.info(f'Завершен парсинг сайта')
 
 
 if __name__ == '__main__':
