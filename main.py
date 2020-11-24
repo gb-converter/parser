@@ -62,57 +62,6 @@ def get_data(html):
     return dict_
 
 
-
-# вычленяет буквенный код из словаря
-parsed_cbr = get_data(get_html('https://www.cbr.ru/currency_base/daily/'))
-#   parsed_cbr   =   {'Date': '21.11.2020', 'AUD': {'Цифр. код': '036', 'Букв. код': 'AUD', 'Единица': '1', 'Валюта': 'Австралийский доллар', 'Курс': '55,4127'},
-for value in parsed_cbr.values():
-    if type(value) is dict:
-        letter_code = value['Букв. код']
-        # print(letter_code)
-
-
-# парсит wiki | ищет icon
-html_wiki = 'https://en.wikipedia.org/wiki/List_of_circulating_currencies'
-data_wiki = BeautifulSoup(get_html(html_wiki), 'lxml')
-date_icon = data_wiki.find('table').find('tbody').find_all('tr')    # date_icon - все tr
-
-dict_with_icon = {}
-switch = 0    # для строк, где первый столбец сконкатенирован с предыдущей строкой. switch = 11or2 если rowspan='2'or'3'
-
-# цикл вычленяет иконки и коды
-for td in date_icon[1:]:
-    if switch == 0:
-        icon = td.find_all('td')[2].text
-        ico_code = td.find_all('td')[3].text
-    elif switch == 1 or switch == 2:
-        icon = td.find_all('td')[1].text
-        ico_code = td.find_all('td')[2].text
-        switch -= 1
-
-    # если строка с конкатенацией то в след. строке иконка будет на -1 позиции
-    if td .find('td', rowspan='2') != None:
-        switch = 1
-    elif td .find('td', rowspan='3') != None:
-        switch = 2
-
-    # заполняем новый словарь, состоящ. из иконок из буквенных кодов
-    if icon != 'none':
-        new_data = {
-            ico_code: {
-                'Знак': icon,
-                'Букв. код': ico_code,
-                        }
-                    }
-    dict_with_icon.update(new_data)
-
-
-print(dict_with_icon)
-
-
-
-
-
 #  адрес сервера, путь для сохранения данных, вызов функций, место где создается json
 def main():
     url = 'https://www.cbr.ru/currency_base/daily/'
@@ -140,6 +89,67 @@ def main():
     write_json(get_data(get_html(url)), way)
 
     PARSER_LOGGER.info(f'Завершен парсинг сайта')
+
+
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # вычленяет буквенный код из словаря
+    parsed_cbr = get_data(get_html('https://www.cbr.ru/currency_base/daily/'))
+    #   parsed_cbr   =   {'Date': '21.11.2020', 'AUD': {'Цифр. код': '036', 'Букв. код': 'AUD', 'Единица': '1', 'Валюта': 'Австралийский доллар', 'Курс': '55,4127'},
+    for value in parsed_cbr.values():
+        if type(value) is dict:
+            letter_code = value['Букв. код']
+            # print(letter_code)
+
+    # парсит wiki | ищет icon
+    html_wiki = 'https://en.wikipedia.org/wiki/List_of_circulating_currencies'
+    data_wiki = BeautifulSoup(get_html(html_wiki), 'lxml')
+    date_icon = data_wiki.find('table').find('tbody').find_all('tr')  # date_icon - все tr
+
+    dict_with_icon = {}
+    switch = 0  # для строк, где первый столбец сконкатенирован с предыдущей строкой. switch = 11or2 если rowspan='2'or'3'
+
+    # цикл вычленяет иконки и коды
+    for td in date_icon[1:]:
+        if switch == 0:
+            icon = td.find_all('td')[2].text[:-1]
+            ico_code = td.find_all('td')[3].text[:-1]
+        elif switch == 1 or switch == 2:
+            icon = td.find_all('td')[1].text[:-1]
+            ico_code = td.find_all('td')[2].text[:-1]
+            switch -= 1
+
+        # если строка с конкатенацией то в след. строке иконка будет на -1 позиции
+        if td.find('td', rowspan='2') != None:
+            switch = 1
+        elif td.find('td', rowspan='3') != None:
+            switch = 2
+
+        # заполняем новый словарь, состоящ. из иконок из буквенных кодов
+        if ico_code != r'(none)\n':  # !!! хочу избавиться от пустых значений в словаре
+            new_data = {
+                ico_code: {
+                    'Знак': icon,
+                    # 'Букв. код': ico_code,
+                }
+            }
+        dict_with_icon.update(new_data)
+
+    # print(dict_with_icon)
+
+    # объединение двух словарей
+    def merge(d1, d2):
+        d = {k: d1[k] for k in set(d1) - set(d2)}
+        d.update({k: d2[k] for k in set(d2) - set(d1)})
+        for k in set(d2) & set(d1):
+            assert isinstance(d1[k], dict) == isinstance(d2[k], dict), "inconsistent dicts"
+            if isinstance(d1[k], dict):
+                d[k] = merge(d1[k], d2[k])
+            else:
+                d[k] = d2[k]  # keep only the second value, but we can keep a list if needed
+        return d
+
+    print(merge(parsed_cbr, dict_with_icon))
+
 
 
 if __name__ == '__main__':
