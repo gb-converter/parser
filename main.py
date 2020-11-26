@@ -86,6 +86,15 @@ def get_data(html):
                     }
                 }
             dict_.update(data)
+    data = {
+        'RUB': {
+            'Цифр. код': str(643),
+            'Единица': str(1),
+            'Валюта': 'Российский рубль',
+            'Курс': str(1)
+        }
+    }
+    dict_.update(data)
     PARSER_LOGGER.info(f'Словарь с результами сохранен')
     return dict_
 
