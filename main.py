@@ -30,6 +30,17 @@ def get_data(html):
 
     dict_ = {'Date': date}
 
+    data_s = BeautifulSoup(get_html('https://ru.currencyrate.today/different-currencies'), 'lxml')
+    tr_s_data = data_s.find('table', class_='table table-striped table-hover').find('tbody').find_all('tr')
+    dict_s = {}
+    for tr_s in tr_s_data:
+        td_s_data = tr_s.find_all('td')
+        if len(td_s_data) != 0:
+            ISO_code = td_s_data[0].text
+            if dict_s.get(ISO_code) is None:
+                dict_s[ISO_code] = td_s_data[3].text
+    print(dict_s)
+    print(len(dict_s))
     for tr in tr_data:
         td_data = tr.find_all('td')
         if len(td_data) != 0:
@@ -38,16 +49,22 @@ def get_data(html):
             unit = td_data[2].text
             currency = td_data[3].text
             rate = td_data[4].text
+            symbol = dict_s.get(char_code)
+            if symbol is None:
+                symbol = ''
+                print('symbol for', char_code, 'is None')
 
             data = {
                 char_code: {
                     'Цифр. код': num_code,
+                    'Символ': symbol,
                     'Единица': unit,
                     'Валюта': currency,
                     'Курс': rate
                     }
                 }
             dict_.update(data)
+    print(len(dict_))
     return dict_
 
 
