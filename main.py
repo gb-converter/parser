@@ -86,6 +86,8 @@ def get_data(html):
                 float(td_data[4].text.replace(',', '.'))
                 rate = td_data[4].text
                 symbol = dict_s.get(char_code)
+                if num_code == 934:
+                    symbol = 'T'
                 if symbol is None:
                     symbol = ''
             except Exception:
@@ -104,6 +106,7 @@ def get_data(html):
     data = {
         'RUB': {
             'Цифр. код': "643",
+            'Символ': "₽",
             'Единица': "1",
             'Валюта': "Российский рубль",
             'Курс': "1,0000"
