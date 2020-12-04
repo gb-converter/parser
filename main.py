@@ -86,8 +86,10 @@ def get_data(html):
                 float(td_data[4].text.replace(',', '.'))
                 rate = td_data[4].text
                 symbol = dict_s.get(char_code)
+                # добавлен символ для TMT  валюты, так как его нет на сайте
                 if num_code == 934:
                     symbol = 'T'
+                # Если символа нет, то вместо него вносим пустую строку
                 if symbol is None:
                     symbol = ''
             except Exception:
@@ -103,6 +105,7 @@ def get_data(html):
                     }
                 }
             dict_.update(data)
+    # Добавляем валюту к которой приводится курс
     data = {
         'RUB': {
             'Цифр. код': "643",
